@@ -1,0 +1,14 @@
+[Unit]
+Description=GuardFall2 video and model worker
+After=network.target
+[Service]
+User=guardfall
+Group=guardfall
+WorkingDirectory=/srv/guardfall2
+EnvironmentFile=/srv/guardfall2/.env
+ExecStart=/srv/guardfall2/.venv/bin/python manage.py process_jobs
+Restart=on-failure
+PrivateTmp=true
+NoNewPrivileges=true
+[Install]
+WantedBy=multi-user.target

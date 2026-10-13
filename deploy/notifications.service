@@ -1,0 +1,10 @@
+[Unit]
+Description=GuardFall2 queued Telegram notification delivery
+[Service]
+Type=oneshot
+User=guardfall
+Group=guardfall
+WorkingDirectory=/srv/guardfall2
+EnvironmentFile=/srv/guardfall2/.env
+ExecStart=/srv/guardfall2/.venv/bin/python manage.py send_notifications
+NoNewPrivileges=true

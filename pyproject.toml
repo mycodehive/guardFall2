@@ -1,0 +1,26 @@
+[project]
+name = "guardfall2"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "cryptography>=44",
+    "django>=5.2,<5.3",
+    "gunicorn>=23",
+    "openpyxl>=3.1",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+vision = [
+    "mediapipe==0.10.21",
+]
+postgres = [
+    "psycopg[binary]>=3.2",
+]
+ml = [
+    "numpy>=1.26,<2",
+    "tensorflow>=2.19,<2.21",
+]
+mariadb = [
+    "mysqlclient>=2.2",
+]

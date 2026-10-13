@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}로그인{% endblock %}
+{% block content %}
+<div class="login-layout">
+  <section class="login-intro"><span class="eyebrow">SAFETY MANAGEMENT</span><h1>더 안전한 현장을 위한<br>하나의 업무 공간.</h1><p>점검과 기록, 조치와 확인까지.<br>GuardFall2에서 안전관리 업무를 이어가세요.</p><div class="login-visual" aria-hidden="true"><div class="visual-shield">✓</div><span class="visual-orbit orbit-one"></span><span class="visual-orbit orbit-two"></span><span class="visual-label">현장 중심의 안전관리</span></div></section>
+  <section class="card login-card" aria-labelledby="login-title"><span class="eyebrow">WELCOME BACK</span><h2 id="login-title">로그인</h2><p class="muted">계정으로 로그인하여 업무를 시작하세요.</p>
+  <form method="post">{% csrf_token %}
+    {% if form.errors %}<div class="alert error" role="alert">아이디와 비밀번호를 확인해 주세요.</div>{% endif %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <div class="form-field"><label for="id_username">아이디</label><input type="text" name="username" id="id_username" autocomplete="username" value="{{ form.username.value|default:'' }}" required autofocus></div>
+    <div class="form-field"><label for="id_password">비밀번호</label><input type="password" name="password" id="id_password" autocomplete="current-password" required></div>
+    <button class="btn btn-primary login-submit" type="submit">로그인 <span aria-hidden="true">→</span></button>
+  </form><p class="login-help">계정 문의는 시스템 관리자에게 연락해 주세요.</p></section>
+</div>
+{% endblock %}

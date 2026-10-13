@@ -1,0 +1,58 @@
+{% load static %}
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}GuardFall2{% endblock %} · GuardFall2</title>
+  <script src="{% static 'js/platform.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body{% if not user.is_authenticated %} class="guest-layout"{% endif %}>
+  <a class="skip-link" href="#main-content">본문으로 이동</a>
+  <header class="topbar">
+    <div class="brand-area">
+      {% if user.is_authenticated %}<button class="icon-button menu-toggle" type="button" aria-label="메뉴 열기" aria-controls="sidebar" aria-expanded="false">☰</button>{% endif %}
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">G</span><span>GuardFall<span class="brand-version">2</span><small>안전관리 플랫폼</small></span></a>
+    </div>
+    {% if user.is_authenticated %}<nav class="top-navigation" aria-label="주요 메뉴"><a href="/">대시보드</a>{% if user.is_staff %}<a href="/settings/">환경설정</a>{% endif %}</nav>{% else %}<span class="top-caption">현장의 안전, 체계적인 기록에서 시작합니다.</span>{% endif %}
+    <div class="topbar-actions">
+      <button class="icon-button theme-toggle" type="button" aria-label="다크 모드 켜기" title="화면 테마 변경"><span aria-hidden="true">◐</span></button>
+      {% if user.is_authenticated %}
+      <details class="profile-menu"><summary><span class="avatar" aria-hidden="true">{{ user.get_username|slice:':1'|upper }}</span><span class="profile-name">{{ user.get_full_name|default:user.username }}</span><span aria-hidden="true">⌄</span></summary><div class="profile-dropdown"><p>{{ user.get_username }}<small>로그인한 사용자</small></p><a href="/accounts/password/">비밀번호 변경</a><form action="/accounts/logout/" method="post">{% csrf_token %}<button type="submit">로그아웃</button></form></div></details>
+      {% endif %}
+    </div>
+  </header>
+  <div class="app-layout">
+    {% if user.is_authenticated %}
+    <button class="sidebar-backdrop" type="button" aria-label="메뉴 닫기" hidden></button>
+    <aside class="sidebar" id="sidebar" aria-label="서비스 메뉴">
+      <div class="sidebar-heading"><span>WORKSPACE</span><button class="icon-button sidebar-close" type="button" aria-label="메뉴 닫기">×</button></div>
+      <nav class="sidebar-navigation" aria-label="업무 메뉴">
+        {% for node in navigation %}
+        <div class="nav-group">
+          {% if node.children %}
+          <details class="nav-section" data-menu-key="{{ node.menu.pk }}" open><summary>{{ node.menu.title }}</summary><div class="nav-children">
+            {% if node.menu.url %}<a class="nav-link" href="{{ node.menu.url }}">{{ node.menu.title }} 홈</a>{% endif %}
+            {% for child in node.children %}
+              {% if child.children %}<details class="nav-section nav-section-nested" data-menu-key="{{ child.menu.pk }}" open><summary>{{ child.menu.title }}</summary><div class="nav-children">{% if child.menu.url %}<a class="nav-link" href="{{ child.menu.url }}">{{ child.menu.title }} 홈</a>{% endif %}{% for leaf in child.children %}<a class="nav-link nav-link-leaf" href="{{ leaf.menu.url }}">{{ leaf.menu.title }}</a>{% endfor %}</div></details>{% else %}<a class="nav-link" href="{{ child.menu.url }}">{{ child.menu.title }}</a>{% endif %}
+            {% endfor %}
+          </div></details>
+          {% else %}<a class="nav-link nav-link-root" href="{{ node.menu.url }}">{{ node.menu.title }}</a>{% endif %}
+        </div>
+        {% empty %}<a class="nav-link nav-link-root" href="/">대시보드</a>{% endfor %}
+      </nav>
+      <div class="sidebar-footer"><span class="status-dot" aria-hidden="true"></span><span>GuardFall2<small>안전한 업무의 기준</small></span></div>
+    </aside>
+    {% endif %}
+    <main class="main-content" id="main-content" tabindex="-1">
+      {% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<div class="alert {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% block content %}{% endblock %}
+      <footer class="content-footer">GuardFall2 · Safety Management Platform</footer>
+    </main>
+  </div>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

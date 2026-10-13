@@ -1,0 +1,13 @@
+(() => {
+  const form=document.querySelector('#camera-form'),video=document.querySelector('#camera-video'),canvas=document.querySelector('#camera-canvas'),status=document.querySelector('#camera-status'),detail=document.querySelector('#camera-detail'),start=document.querySelector('#camera-start'),stop=document.querySelector('#camera-stop');
+  if(!form)return;
+  let stream=null,session=null,sequence=0,running=false,timer=null;
+  const csrf=form.querySelector('[name=csrfmiddlewaretoken]').value;
+  async function send(url,body,json=true){const response=await fetch(url,{method:'POST',credentials:'same-origin',headers:{'X-CSRFToken':csrf,...(json?{'Content-Type':'application/json'}:{})},body:json?JSON.stringify(body):body});if(!response.ok){let data;try{data=await response.json();}catch{}throw new Error(data?.error||'요청 처리 실패 ('+response.status+')');}return response.json();}
+  function show(message,info){status.textContent=message;detail.textContent=info||'';}
+  async function shutdown(){running=false;clearTimeout(timer);stream?.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;start.disabled=false;stop.disabled=true;const current=session;session=null;if(current)try{await send('/monitor/'+current+'/stop/',{});}catch(e){detail.textContent=e.message;}}
+  async function tick(){if(!running)return;try{canvas.width=640;canvas.height=Math.max(1,Math.round(video.videoHeight/video.videoWidth*640));canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);const result=await send('/monitor/'+session+'/image/',{sequence:sequence++,image:canvas.toDataURL('image/jpeg',.65).split(',')[1]});show(result.prediction===1?'낙상 의심':result.prediction===0?'정상 자세':'관절 확인 불가',result.event?'감지 기록 #'+result.event+' 생성됨':'분석한 프레임 '+sequence+'개');}catch(e){show('감지 중단',e.message);await shutdown();return;}if(running)timer=setTimeout(tick,200);}
+  form.addEventListener('submit',async e=>{e.preventDefault();if(running)return;start.disabled=true;try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('HTTPS 또는 localhost에서 접속하세요.');stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:false});video.srcObject=stream;await video.play();const result=await send('/monitor/start/',new FormData(form),false);session=result.id;sequence=0;running=true;stop.disabled=false;show('감지 시작','카메라 영상을 분석합니다.');tick();}catch(error){show('시작 실패',error.message);await shutdown();}});
+  stop.addEventListener('click',async()=>{await shutdown();show('감지 종료','저장된 기록은 감지 기록에서 확인하세요.');});
+  window.addEventListener('pagehide',()=>{stream?.getTracks().forEach(t=>t.stop());if(session)fetch('/monitor/'+session+'/stop/',{method:'POST',headers:{'X-CSRFToken':csrf},keepalive:true,credentials:'same-origin'}).catch(()=>{});});
+})();
